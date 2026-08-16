@@ -1,0 +1,133 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Vertical Search Engine</title>
+
+    <!-- Reuse the main coursework styling already used by the dashboard. -->
+    <link rel="stylesheet" href="{% static 'core/style.css' %}" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Coventry Research Search</h1>
+      <p>Centre for Healthcare and Community Transformation</p>
+    </header>
+
+    <main>
+      <section>
+        <h2>Search Publications</h2>
+
+        <p>
+          Search research publications authored by verified members of Coventry
+          University's Centre for Healthcare and Community Transformation.
+        </p>
+
+        <form method="get">
+          <input
+            type="text"
+            name="q"
+            value="{{ query }}"
+            placeholder="Enter keywords, e.g. mental health stress"
+            required
+          />
+
+          <button type="submit">Search</button>
+        </form>
+      </section>
+
+      {% if query %}
+
+      <section>
+        <h2>Search Results</h2>
+
+        <p>
+          {{ result_count }} ranked result{{ result_count|pluralize }} for
+          <strong>"{{ query }}"</strong>
+        </p>
+
+        {% if results %} {% for result in results %}
+
+        <article class="task-card">
+          <p>
+            <strong> Rank {{ result.rank }} </strong>
+
+            | Relevance score: {{ result.score|floatformat:4 }}
+          </p>
+
+          <h3>
+            <a
+              href="{{ result.publication.publication_url }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ result.publication.title }}
+            </a>
+          </h3>
+
+          <p>
+            <strong>Authors:</strong>
+            {{ result.publication.authors }}
+          </p>
+
+          <p>
+            <strong>Verified Centre authors:</strong>
+
+            {% for link in result.publication.publicationresearcher_set.all %}
+
+            <a
+              href="{{ link.researcher.profile_url }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ link.researcher.name }}
+            </a>
+
+            {% if not forloop.last %} ; {% endif %} {% empty %}
+
+            <em>No linked Centre researcher profile available.</em>
+
+            {% endfor %}
+          </p>
+
+          <p>
+            <strong>Journal:</strong>
+            {{ result.publication.journal }}
+          </p>
+
+          <p>
+            <strong>Publication year:</strong>
+            {{ result.publication.publication_year }}
+          </p>
+
+          {% if result.publication.abstract %}
+
+          <p>
+            <strong>Abstract:</strong>
+            {{ result.publication.abstract|truncatewords:55 }}
+          </p>
+
+          {% else %}
+
+          <p>
+            <em> Abstract not available from PurePortal. </em>
+          </p>
+
+          {% endif %}
+        </article>
+
+        {% endfor %} {% else %}
+
+        <p>No indexed publications matched this query.</p>
+
+        {% endif %}
+      </section>
+
+      {% endif %}
+    </main>
+  </body>
+</html>

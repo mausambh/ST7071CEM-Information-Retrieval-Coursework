@@ -1,0 +1,91 @@
+/* 
+   Main styling for the coursework web interface.
+
+   The design is intentionally simple and academic so the system
+   looks professional without distracting from the Information
+   Retrieval functionality being demonstrated.
+*/
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f4f6f8;
+    color: #1f2933;
+}
+
+header {
+    background-color: #17365d;
+    color: white;
+    padding: 24px 8%;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 30px;
+}
+
+header p {
+    margin: 6px 0 0;
+    color: #d7e2ef;
+}
+
+main {
+    width: 84%;
+    max-width: 1100px;
+    margin: 40px auto;
+}
+
+.intro {
+    margin-bottom: 32px;
+}
+
+.intro h2 {
+    margin-bottom: 8px;
+}
+
+.intro p {
+    color: #5a6570;
+    line-height: 1.6;
+}
+
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(300px, 1fr)
+    );
+    gap: 24px;
+}
+
+.task-card {
+    background: white;
+    border: 1px solid #dfe4ea;
+    border-radius: 10px;
+    padding: 26px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.task-card h3 {
+    margin-top: 0;
+    color: #17365d;
+}
+
+.task-card p {
+    color: #606a75;
+    line-height: 1.55;
+}
+
+.status {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 7px 12px;
+    border-radius: 16px;
+    background-color: #e8f1fb;
+    color: #245b91;
+    font-size: 13px;
+    font-weight: bold;
+}

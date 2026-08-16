@@ -1,0 +1,180 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Document Clustering</title>
+
+    <!-- Reuse the coursework dashboard styling. -->
+    <link rel="stylesheet" href="{% static 'core/style.css' %}" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Document Clustering</h1>
+      <p>K-Means clustering of BBC News documents</p>
+    </header>
+
+    <main>
+      <section>
+        <h2>Dataset Overview</h2>
+
+        <p>
+          The clustering dataset contains
+          <strong>{{ total_documents }}</strong>
+          BBC News documents.
+        </p>
+
+        <p>
+          <strong>Source:</strong>
+          {{ source_name }}
+        </p>
+
+        <p>
+          <strong>Dataset reference:</strong>
+          BBC News dataset used for document clustering research, prepared by
+          Greene and Cunningham. Original article content remains copyright BBC
+          News.
+        </p>
+
+        <p>
+          <a
+            href="https://mlg.ucd.ie/datasets/bbc.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View BBC Dataset Reference →
+          </a>
+        </p>
+
+        <div class="task-grid">
+          <div class="task-card">
+            <h3>Economics</h3>
+            <p>{{ category_counts.Economics }} documents</p>
+          </div>
+
+          <div class="task-card">
+            <h3>Entertainment</h3>
+            <p>{{ category_counts.Entertainment }} documents</p>
+          </div>
+
+          <div class="task-card">
+            <h3>Politics</h3>
+            <p>{{ category_counts.Politics }} documents</p>
+          </div>
+        </div>
+      </section>
+
+      {% if evaluation %}
+
+      <section>
+        <h2>Clustering Evaluation</h2>
+
+        <div class="task-grid">
+          <div class="task-card">
+            <h3>Silhouette Score</h3>
+            <p>{{ evaluation.silhouette_score|floatformat:4 }}</p>
+          </div>
+
+          <div class="task-card">
+            <h3>Adjusted Rand Index</h3>
+            <p>{{ evaluation.adjusted_rand_index|floatformat:4 }}</p>
+          </div>
+
+          <div class="task-card">
+            <h3>Normalized Mutual Information</h3>
+            <p>{{ evaluation.normalized_mutual_information|floatformat:4 }}</p>
+          </div>
+        </div>
+
+        <p>
+          <strong>TF-IDF features:</strong>
+          {{ evaluation.features }}
+        </p>
+      </section>
+
+      {% endif %}
+
+      <section>
+        <h2>Discovered K-Means Clusters</h2>
+
+        {% for cluster in cluster_composition %}
+
+        <article class="task-card">
+          <h3>Cluster {{ cluster.cluster_id }} — {{ cluster.category }}</h3>
+
+          <p>
+            <strong>Total documents:</strong>
+            {{ cluster.total }}
+          </p>
+
+          <p>
+            Economics: {{ cluster.economics }} | Entertainment: {{
+            cluster.entertainment }} | Politics: {{ cluster.politics }}
+          </p>
+        </article>
+
+        {% empty %}
+
+        <p>No clustering results are currently stored.</p>
+
+        {% endfor %}
+      </section>
+
+      <section>
+        <h2>Classify a New Document</h2>
+
+        <p>
+          Enter a new document below. The document will be transformed using
+          TF-IDF and assigned to the nearest K-Means cluster.
+        </p>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <textarea
+            name="document_text"
+            rows="10"
+            style="width: 100%"
+            placeholder="Paste a new Economics, Entertainment, or Politics document here..."
+            required
+          >
+{{ document_text }}</textarea
+          >
+
+          <br /><br />
+
+          <button type="submit">Predict Cluster</button>
+        </form>
+      </section>
+
+      {% if prediction %}
+
+      <section>
+        <h2>Prediction Result</h2>
+
+        <article class="task-card">
+          <p>
+            <strong>Predicted cluster:</strong>
+            {{ prediction.cluster_id }}
+          </p>
+
+          <p>
+            <strong>Predicted category:</strong>
+            {{ prediction.category }}
+          </p>
+
+          <p>
+            <strong>Distance to centroid:</strong>
+            {{ prediction.distance_to_centroid|floatformat:4 }}
+          </p>
+        </article>
+      </section>
+
+      {% endif %}
+    </main>
+  </body>
+</html>

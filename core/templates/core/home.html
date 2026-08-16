@@ -1,0 +1,129 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>{{ module_code }} | Information Retrieval</title>
+
+    <!--
+        Django's static template tag loads the stylesheet from the
+        core application's static directory.
+    -->
+    <link rel="stylesheet" href="{% static 'core/style.css' %}" />
+  </head>
+
+  <body>
+    <header>
+      <h1>Information Retrieval Coursework</h1>
+      <p>{{ module_code }} — Django Web Application</p>
+    </header>
+
+    <main>
+      <section class="intro">
+        <h2>Coursework Dashboard</h2>
+
+        <p>
+          This system implements both assessed components of the Information
+          Retrieval coursework through a single Django web interface.
+        </p>
+      </section>
+
+      <section class="task-card" style="margin-bottom: 24px">
+        <h3>Oracle Database Status</h3>
+
+        {% if database_connected %}
+
+        <p>
+          <strong>Status:</strong>
+          Connected
+        </p>
+
+        <p>
+          <strong>Oracle User:</strong>
+          {{ database_user }}
+        </p>
+
+        <p>
+          <strong>Researchers Stored:</strong>
+          {{ researcher_count }}
+        </p>
+
+        <p>
+          <strong>Publications Stored:</strong>
+          {{ publication_count }}
+        </p>
+
+        {% else %}
+
+        <p>
+          <strong>Status:</strong>
+          Database connection unavailable
+        </p>
+
+        {% endif %}
+      </section>
+
+      <section class="task-grid">
+        <article class="task-card">
+          <h3>Task 1 — Vertical Search Engine</h3>
+
+          <p>
+            Crawl relevant Coventry University PurePortal publications,
+            construct an index and return ranked publication results based on
+            user queries.
+          </p>
+
+          <p>
+            <strong>Indexed documents:</strong>
+            {{ indexed_document_count }}
+          </p>
+
+          <p>
+            <strong>Vocabulary terms:</strong>
+            {{ vocabulary_count }}
+          </p>
+
+          <p>
+            <strong>Inverted-index postings:</strong>
+            {{ posting_count }}
+          </p>
+
+          <p>
+            <a href="{% url 'search_engine:search' %}">
+              Open Vertical Search Engine →
+            </a>
+          </p>
+
+          <span class="status"> Working </span>
+        </article>
+
+        <article class="task-card">
+          <h3>Task 2 — Document Clustering</h3>
+
+          <p>
+            Process Economics, Entertainment and Politics documents using TF-IDF
+            and K-Means clustering, then assign new user-entered text to a
+            learned cluster.
+          </p>
+
+          <p>
+            <strong>Clustering documents:</strong>
+            {{ clustering_document_count }}
+          </p>
+
+          <p>
+            <a href="{% url 'clustering:clustering' %}">
+              Open Document Clustering →
+            </a>
+          </p>
+
+          <span class="status"> Working </span>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
