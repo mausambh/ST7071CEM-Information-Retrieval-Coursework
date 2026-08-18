@@ -1,245 +1,622 @@
 # ST7071CEM Information Retrieval Coursework
 
-This project implements both assessed components of the **ST7071CEM Information Retrieval** coursework using Python, Django, Oracle Database, and scikit-learn.
+This repository contains the complete implementation of both assessed components of the **ST7071CEM Information Retrieval** coursework.
 
-The application contains:
+The system is implemented using Python, Django, Oracle Database, Coventry University PurePortal, TF-IDF, inverted indexing, cosine similarity, scikit-learn, and K-Means clustering.
 
-1. **Task 1 — Vertical Search Engine**
-2. **Task 2 — Document Clustering**
+The project provides one integrated Django web application containing:
 
-A Django web interface is provided for both tasks, while Oracle Database is used for persistent storage.
+1. **Task 1 - Vertical Search Engine**
+2. **Task 2 - Document Clustering**
 
----
-
-# Task 1 — Vertical Search Engine
-
-The vertical search engine retrieves and ranks research publications associated with verified researchers from Coventry University's **Centre for Healthcare and Community Transformation**.
-
-## Main Features
-
-- Polite web crawler
-- `robots.txt` checking
-- Five-second crawl delay respected
-- Researcher discovery from Coventry PurePortal
-- Researcher profile extraction
-- Publication URL discovery
-- Publication metadata extraction
-- Author extraction
-- Publication year extraction
-- Publication URL storage
-- Researcher PurePortal profile URL storage
-- Publication-to-researcher relationships
-- Abstract extraction where available
-- Oracle Database persistence
-- Duplicate URL prevention
-- Text preprocessing
-- Stop-word removal
-- Removal of numeric noise while preserving publication years
-- TF-IDF indexing
-- Vocabulary and IDF storage
-- Stored TF-IDF document vectors
-- Inverted index
-- Ranked retrieval
-- Cosine-style TF-IDF similarity
-- Django search interface
-- Repeatable crawler/index update command
-- Weekly automated update through Windows Task Scheduler
+Oracle Database is used as the persistent datastore for both tasks.
 
 ---
 
-## Task 1 Data Collection
+# System Overview
 
-The crawler first identifies researchers associated with the target Coventry University centre.
-
-Verified researchers are stored in the Oracle `RESEARCHERS` table.
-
-Publication pages are retained when at least one author profile matches a verified Centre researcher.
-
-This ensures that the collection remains restricted to publications associated with researchers from the required Centre.
-
-### Final Task 1 Dataset
-
-- Verified researchers: **18**
-- Publications: **68**
-- Publication-researcher relationships: **94**
-- Indexed documents: **68**
-- Vocabulary terms: **3,601**
-- Inverted-index postings: **8,527**
-
-Abstracts were available for:
-
-- Publications with abstracts: **60**
-- Publications without abstracts: **8**
-- Abstract coverage: **88.24%**
-
-Publications without abstracts remain searchable using their available metadata such as title, authors, and publication year.
-
----
-
-## PurePortal Crawling and Access Restrictions
-
-The crawler follows the site's published `robots.txt` rules and respects the configured five-second crawl delay.
-
-The Coventry PurePortal Centre page reports a larger collection of research outputs. However, some complete publication-listing endpoints return HTTP `403 Forbidden` to automated requests.
-
-The implementation does **not attempt to bypass these access restrictions**.
-
-Instead, publication URLs are collected from pages that are legitimately accessible to the crawler, particularly verified researcher profile pages.
-
-Repeated publication URLs appearing on multiple researcher profiles are deduplicated before processing.
-
-The final accessible collection used by the system contains **68 unique publication URLs**.
-
-This limitation should be considered when interpreting collection coverage.
+```text
+                    ST7071CEM Coursework
+                            |
+                 Django Web Application
+                            |
+               +------------+------------+
+               |                         |
+               v                         v
+        Task 1 Search              Task 2 Clustering
+               |                         |
+               v                         v
+      Coventry PurePortal          BBC News Dataset
+               |                         |
+               v                         v
+        Oracle Database             Oracle Database
+               |                         |
+               v                         v
+      TF-IDF + Inverted Index      TF-IDF + K-Means
+               |                         |
+               v                         v
+       Cosine Ranked Search        Cluster Prediction
+                                         |
+                                         v
+                                Prediction History
+```
 
 ---
 
-## Task 1 Text Preprocessing
+# Task 1 - Vertical Search Engine
 
-Publication text is constructed from available fields including:
+Task 1 implements a vertical search engine restricted to the research outputs of Coventry University's:
 
-- Publication title
-- Authors
+**Centre for Healthcare and Community Transformation**
+
+Official PurePortal Centre page:
+
+```text
+https://pureportal.coventry.ac.uk/en/organisations/centre-for-healthcare-and-community-transformation/
+```
+
+Official Research Output listing:
+
+```text
+https://pureportal.coventry.ac.uk/en/organisations/centre-for-healthcare-and-community-transformation/publications/
+```
+
+The final implementation uses **Coventry PurePortal only** as the publication source.
+
+No external publication metadata source is used.
+
+---
+
+# Final Task 1 Collection
+
+The official Centre Research Output listing currently contains:
+
+```text
+81 research outputs
+```
+
+The crawler dynamically discovers the collection rather than hard-coding the number `81`.
+
+A verified discovery run produced:
+
+```text
+Listing pages visited: 2
+Unique PurePortal research outputs discovered: 81
+```
+
+The final Oracle collection contains:
+
+```text
+Verified Centre researchers: 18
+Research outputs:            81
+Indexed documents:           81
+Vocabulary terms:            4,240
+Inverted-index postings:     10,042
+```
+
+The collection includes all research-output types currently listed by the Centre rather than restricting the crawler to journal articles.
+
+Current research-output types include:
+
+- Article
 - Abstract
-- Publication year
+- Review article
+- Chapter
+- Poster
+- Comment/debate
+- Commissioned report
+- Other report
+- Conference article
+- Letter
+- Web publication/site
 
-The preprocessing process performs:
+---
+
+# Task 1 Data Collection
+
+## Official Centre Listing Discovery
+
+The crawler uses the official Centre Research Output listing as the authoritative source for collection membership.
+
+The discovery process:
+
+1. Checks `robots.txt`
+2. Accesses the approved Coventry PurePortal listing
+3. Detects pagination dynamically
+4. Extracts research-output URLs
+5. Deduplicates URLs
+6. Processes each output detail page
+7. Extracts structured metadata
+8. Creates or updates Oracle records
+9. Links outputs with verified Centre researchers where applicable
+
+No expected publication count is hard-coded.
+
+Therefore, if the official Centre collection changes, a future full discovery can identify the updated number of outputs automatically.
+
+---
+
+# PurePortal Access Handling
+
+Coventry PurePortal uses Cloudflare protection on the complete Centre Research Output listing.
+
+Normal automated HTTP requests to the listing can return:
+
+```text
+HTTP 403 Forbidden
+```
+
+The implementation does not use:
+
+- CAPTCHA solvers
+- stealth browser packages
+- proxy rotation
+- browser fingerprint spoofing
+- automated Cloudflare bypass mechanisms
+- external publication metadata sources
+
+For full collection discovery, Selenium attaches to a normal Chrome browser session that has already been approved through ordinary browser access.
+
+The approved browser can be started with remote debugging enabled:
+
+```powershell
+Start-Process "chrome.exe" -ArgumentList "--remote-debugging-port=9222","--user-data-dir=C:\temp\pureportal-chrome"
+```
+
+The official Centre Research Output listing is then opened manually in that browser and the normal Cloudflare verification is allowed to complete.
+
+The crawler subsequently attaches to the approved Chrome session and reads the rendered official listing.
+
+Publication detail pages are then fetched using the crawler's normal polite request mechanism.
+
+---
+
+# Ethical and Polite Crawling
+
+The Task 1 crawler is designed to minimise unnecessary load on Coventry PurePortal.
+
+It:
+
+- reads `robots.txt`
+- checks whether a URL is permitted before requesting it
+- uses a descriptive educational user agent
+- applies a five-second crawl delay
+- restricts crawling to the Coventry PurePortal domain
+- deduplicates publication URLs
+- updates existing database records instead of unnecessarily creating duplicates
+- does not use external publication sources
+- does not attempt automated CAPTCHA solving
+- does not use proxy rotation
+- does not use browser stealth or fingerprint spoofing
+
+Example runtime behaviour:
+
+```text
+robots.txt allows this page.
+Waiting 5 seconds before requesting it...
+```
+
+---
+
+# Publication Metadata
+
+The crawler stores structured metadata for every collected research output.
+
+The Oracle `PUBLICATIONS` table includes:
+
+```text
+PUBLICATION_ID
+TITLE
+AUTHORS
+PUBLICATION_YEAR
+PUBLICATION_DATE
+PUBLICATION_URL
+ABSTRACT
+PUBLICATION_TYPE
+AUTHOR_PROFILES_JSON
+SOURCE_NAME
+SOURCE_URL
+CRAWLED_AT
+```
+
+---
+
+# Publication Date
+
+The best date precision provided by PurePortal is preserved.
+
+Examples:
+
+```text
+May 2026
+05 May 2026
+July 2026
+```
+
+A day is not invented when PurePortal provides only a month and year.
+
+---
+
+# Publication Type
+
+The research-output type is extracted from the PurePortal detail page.
+
+Examples include:
+
+```text
+Article
+Poster
+Abstract
+Chapter
+Review article
+```
+
+The publication type is displayed in the Django search results.
+
+---
+
+# Author Profiles
+
+When PurePortal provides an internal author profile, the author's name and profile URL are stored in:
+
+```text
+AUTHOR_PROFILES_JSON
+```
+
+The search interface therefore displays available PurePortal author profiles as clickable links.
+
+Authors without an internal PurePortal profile remain visible as normal text.
+
+---
+
+# Verified Researchers
+
+Researchers associated with the target Centre are stored in:
+
+```text
+RESEARCHERS
+```
+
+Important fields include:
+
+```text
+RESEARCHER_ID
+NAME
+PROFILE_URL
+CENTRE_NAME
+CRAWLED_AT
+```
+
+Publication-to-researcher relationships are stored separately in:
+
+```text
+PUBLICATION_RESEARCHERS
+```
+
+The relationship table uses a composite publication/researcher primary key.
+
+The final Oracle database currently stores:
+
+```text
+18 verified Centre researchers
+```
+
+---
+
+# Task 1 Text Processing
+
+Searchable publication text is constructed from available publication metadata.
+
+The preprocessing pipeline performs operations such as:
 
 1. Lowercase conversion
 2. Token extraction
-3. Punctuation removal
+3. Punctuation filtering
 4. English stop-word removal
-5. Single-character token removal
-6. Numeric-noise removal
-7. Preservation of valid four-digit publication years
+5. Removal of single-character noise
+6. Numeric-noise filtering
+7. Preservation of useful four-digit publication years
 
-For example, meaningless numeric tokens are removed while useful publication years such as `2024`, `2025`, and `2026` remain searchable.
+The same preprocessing rules are applied to user queries.
 
----
-
-## TF-IDF Indexing
-
-The collection is represented using **TF-IDF**.
-
-Three Oracle structures support retrieval:
-
-### `TERM_INDEX`
-
-Stores:
-
-- Vocabulary term
-- Inverse Document Frequency (IDF)
-
-### `DOC_VECTORS`
-
-Stores:
-
-- Publication URL
-- Publication title
-- Sparse TF-IDF vector represented as JSON
-- Indexing timestamp
-
-### `INVERTED_INDEX`
-
-Stores:
-
-- Term
-- Publication URL
-- Term frequency
-- TF-IDF weight
-
-The final index contains:
-
-- **68 indexed publications**
-- **3,601 vocabulary terms**
-- **8,527 inverted-index postings**
+This provides a consistent representation between indexed publications and search queries.
 
 ---
 
-## Ranked Search
+# TF-IDF Index
 
-User queries are processed using the same preprocessing rules applied to publication documents.
+The final Task 1 collection is represented using **TF-IDF**.
 
-The search process performs:
+Three persistent Oracle structures support indexing and retrieval.
 
-1. Query preprocessing
-2. Query term-frequency calculation
-3. Query TF-IDF weighting
-4. Inverted-index lookup
-5. Document score accumulation
-6. Cosine-style similarity ranking
-7. Descending relevance ordering
+---
 
-An example query is:
+## TERM_INDEX
+
+Stores:
+
+```text
+TERM
+IDF
+```
+
+Each unique vocabulary term appears once together with its inverse-document-frequency value.
+
+---
+
+## DOC_VECTORS
+
+Stores:
+
+```text
+URL
+TITLE
+VECTOR_JSON
+INDEXED_AT
+```
+
+Each indexed PurePortal research output has a persisted sparse TF-IDF representation.
+
+---
+
+## INVERTED_INDEX
+
+Stores:
+
+```text
+INDEX_ID
+TERM
+URL
+TERM_FREQUENCY
+TF_IDF
+```
+
+The inverted index allows the search engine to retrieve postings only for terms involved in the user's query instead of scanning every document for every search.
+
+Indexes are also created on:
+
+```text
+TERM
+URL
+```
+
+to improve lookup performance.
+
+---
+
+# Final Verified Search Index
+
+A verified final index build produced:
+
+```text
+Documents: 81
+Terms:     4,240
+Postings:  10,042
+```
+
+Oracle verification:
+
+```text
+PUBLICATIONS       81
+DOCUMENT_VECTORS   81
+TERMS              4240
+POSTINGS           10042
+```
+
+---
+
+# Ranked Retrieval
+
+User queries are processed using the same preprocessing rules used during indexing.
+
+The retrieval process performs:
+
+```text
+User Query
+    |
+    v
+Preprocessing
+    |
+    v
+Query Term Frequencies
+    |
+    v
+Stored IDF Values
+    |
+    v
+Query TF-IDF Vector
+    |
+    v
+Inverted-Index Lookup
+    |
+    v
+TF-IDF Score Accumulation
+    |
+    v
+Cosine Similarity
+    |
+    v
+Descending Relevance Ranking
+```
+
+The document vectors produced by the TF-IDF vectorizer are L2-normalised.
+
+The query vector is also L2-normalised.
+
+Therefore, the weighted dot product between the query vector and document vectors represents cosine similarity.
+
+---
+
+# Example Search
+
+Example query:
 
 ```text
 mental health stress
 ```
 
-The system returns ranked publications together with:
+The system returns the highest-ranking research outputs with information including:
 
 - Rank
-- Relevance score
+- TF-IDF cosine-similarity score
 - Publication title
+- Publication date
+- Research-output type
 - Authors
-- Publication year
-- Abstract preview
-- Publication URL
-- Verified Centre researcher profile links
+- Clickable PurePortal author profiles where available
+- Abstract
+- Source
+- Link to the original Coventry PurePortal record
+
+A verified query returned ten ranked results from the current 81-document collection.
 
 ---
 
-## Django Search Interface
+# Django Vertical Search Interface
 
-The search interface is available at:
+The Task 1 interface is available at:
 
 ```text
 http://127.0.0.1:8000/search/
 ```
 
-The user can enter a query and receive the top-ranked publications from the Oracle-backed search index.
+The final interface provides:
+
+- Search form
+- Ranked result cards
+- Rank numbers
+- TF-IDF cosine-similarity scores
+- Research-output type badges
+- PurePortal source badges
+- Publication dates
+- Authors
+- Clickable PurePortal author profiles
+- Abstracts
+- Direct publication links
+- Navigation back to the main dashboard
 
 ---
 
-## Task 1 Update Command
+# Full Collection Discovery and Scheduled Refresh
 
-The complete crawler and index can be refreshed using the Django management command:
+The final implementation deliberately separates two maintenance operations.
+
+---
+
+## 1. Full Collection Discovery
+
+Full discovery accesses the official Centre Research Output listing.
+
+It is used when checking for:
+
+- newly added research outputs
+- removed research outputs
+- changes to the official Centre collection
+- changes in pagination
+
+Because the official listing is Cloudflare-protected, full discovery uses the approved Chrome session described earlier.
+
+The main full-discovery function is:
+
+```python
+crawl_and_save_discovered_publications()
+```
+
+A verified full discovery found:
+
+```text
+Listing pages visited: 2
+Unique PurePortal research outputs discovered: 81
+```
+
+---
+
+## 2. Scheduled Stored-Publication Refresh
+
+The weekly scheduled job does not need to rediscover the protected listing.
+
+Instead, it:
+
+1. Reads existing PurePortal publication URLs from Oracle
+2. Validates that the URLs belong to Coventry PurePortal
+3. Politely re-fetches each publication detail page
+4. Updates publication metadata
+5. Updates researcher relationships where applicable
+6. Rebuilds the complete TF-IDF index
+
+The scheduled refresh function is:
+
+```python
+refresh_saved_publications()
+```
+
+The number of stored publications is not hard-coded.
+
+If the collection changes after a future approved full discovery, the scheduled refresh automatically processes the new database total.
+
+---
+
+# Weekly Search-Index Maintenance
+
+The Django management command is:
 
 ```powershell
 python manage.py update_search_index
 ```
 
-The command performs three stages:
+The command performs:
 
 ```text
-Stage 1 — Update Centre researchers
-Stage 2 — Update discovered publications
-Stage 3 — Rebuild the TF-IDF and inverted indexes
+Stage 1 - Refresh stored PurePortal publication detail pages
+Stage 2 - Rebuild the TF-IDF and inverted search indexes
 ```
 
-A successful verified run produced:
+A verified unattended run produced:
 
 ```text
+Stored URLs processed: 81
+Successfully refreshed: 81
+Skipped: 0
+Errors: 0
+Publications currently in Oracle: 81
+
+Publication refresh:
+{
+    'stored_urls': 81,
+    'saved_or_updated': 81,
+    'skipped': 0,
+    'errors': 0,
+    'database_publications': 81
+}
+
+Stage 2: Rebuilding TF-IDF search index
+
 Index rebuild:
-Documents: 68
-Terms: 3601
-Postings: 8527
+{
+    'documents': 81,
+    'terms': 4240,
+    'postings': 10042
+}
+
+Scheduled search-engine update completed successfully.
 
 Researchers stored: 18
-Publications stored: 68
+Publications stored: 81
 ```
+
+This verifies that the stored PurePortal collection and search index can be refreshed successfully without requiring the protected listing page during the scheduled operation.
 
 ---
 
-## Weekly Automated Update
+# Windows Task Scheduler
 
-A Windows batch file is provided:
+The repository includes:
 
 ```text
 run_weekly_search_update.bat
 ```
 
-It executes:
+The batch file runs:
 
 ```powershell
 python manage.py update_search_index
@@ -247,27 +624,31 @@ python manage.py update_search_index
 
 using the coursework virtual environment.
 
-The local coursework installation has also been configured through **Windows Task Scheduler**.
+The local coursework installation is configured through Windows Task Scheduler.
 
 Current schedule:
 
 ```text
 Task Name: ST7071CEM Weekly Search Update
-Schedule Type: Weekly
-Day: Sunday
-Time: 7:00 PM
-State: Enabled
+Schedule:  Weekly
+Day:       Sunday
+Time:      7:00 PM
+State:     Enabled
 ```
 
-This provides a repeatable mechanism for periodically refreshing the vertical search engine.
+This provides a repeatable periodic refresh mechanism for the stored PurePortal documents and the TF-IDF search index.
 
 ---
 
-# Task 2 — Document Clustering
+# Task 2 - Document Clustering
 
-Task 2 performs unsupervised document clustering using **TF-IDF and K-Means**.
+Task 2 implements unsupervised document clustering using:
 
-The dataset contains BBC News documents representing the three coursework categories:
+```text
+TF-IDF + K-Means
+```
+
+The dataset contains documents belonging to three coursework categories:
 
 - Economics
 - Entertainment
@@ -275,53 +656,9 @@ The dataset contains BBC News documents representing the three coursework catego
 
 ---
 
-## BBC News Dataset
+# BBC News Dataset
 
-The original BBC dataset contains documents grouped into categories including:
-
-- Business
-- Entertainment
-- Politics
-- Sport
-- Technology
-
-For this coursework, the following mapping is used:
-
-```text
-BBC Business      → Economics
-BBC Entertainment → Entertainment
-BBC Politics      → Politics
-```
-
-A reproducible random sample of **50 documents from each category** is used.
-
-Final clustering dataset:
-
-```text
-Economics:     50
-Entertainment: 50
-Politics:      50
------------------
-Total:        150
-```
-
-The random sampling process uses:
-
-```text
-random_seed = 42
-```
-
-This makes the dataset selection reproducible.
-
----
-
-## BBC Dataset Source and Copyright
-
-Source:
-
-```text
-BBC News
-```
+The source dataset is the **BBC News dataset** made available by Greene and Cunningham.
 
 Dataset reference:
 
@@ -329,17 +666,41 @@ Dataset reference:
 https://mlg.ucd.ie/datasets/bbc.html
 ```
 
-The benchmark dataset is associated with Greene and Cunningham's document-clustering research.
+The original dataset contains multiple categories.
 
-Original BBC article content remains copyright **BBC News**.
+For this coursework, the following mapping is used:
 
-The source name and dataset reference are stored with all **150 documents** in Oracle rather than being documented only in the web interface.
+```text
+BBC Business      -> Economics
+BBC Entertainment -> Entertainment
+BBC Politics      -> Politics
+```
+
+A balanced reproducible sample contains:
+
+```text
+Economics:      50
+Entertainment:  50
+Politics:       50
+------------------
+Total:         150
+```
+
+Sampling uses:
+
+```text
+random_seed = 42
+```
+
+The source category and coursework category are both preserved in Oracle.
+
+Original BBC article content remains subject to BBC copyright.
 
 ---
 
-## Oracle Storage for Task 2
+# Task 2 Oracle Storage
 
-BBC documents are stored in:
+The original clustering collection is stored in:
 
 ```text
 CLUSTER_DOCUMENTS
@@ -347,26 +708,28 @@ CLUSTER_DOCUMENTS
 
 Important fields include:
 
-- `DOCUMENT_ID`
-- `DOCUMENT_TEXT`
-- `SOURCE_CATEGORY`
-- `COURSEWORK_CATEGORY`
-- `SOURCE_NAME`
-- `SOURCE_REFERENCE`
-- `CLUSTER_ID`
-- `IMPORTED_AT`
+```text
+DOCUMENT_ID
+DOCUMENT_TEXT
+SOURCE_CATEGORY
+COURSEWORK_CATEGORY
+SOURCE_NAME
+SOURCE_REFERENCE
+CLUSTER_ID
+IMPORTED_AT
+```
 
-The original BBC category is preserved separately from the mapped coursework category.
+The original 150-document dataset remains separate from interactive user predictions.
 
-This allows the original labels to be used later for evaluation without supplying them to K-Means during training.
+This prevents user submissions from changing the clustering dataset used for evaluation.
 
 ---
 
-## TF-IDF Representation
+# TF-IDF Configuration for Clustering
 
-BBC document text is converted into TF-IDF feature vectors using scikit-learn.
+BBC News documents are converted into TF-IDF vectors using scikit-learn.
 
-The clustering configuration includes:
+The vectorizer configuration includes:
 
 ```text
 lowercase = True
@@ -376,7 +739,7 @@ max_df = 0.95
 max_features = 5000
 ```
 
-The final model uses:
+The final fitted model contains:
 
 ```text
 3,094 TF-IDF features
@@ -384,7 +747,7 @@ The final model uses:
 
 ---
 
-## K-Means Configuration
+# K-Means Configuration
 
 K-Means is configured with:
 
@@ -394,169 +757,386 @@ random_state = 42
 n_init = 20
 ```
 
-The three clusters correspond to the three document topics.
+The three clusters are learned without giving K-Means the original BBC topic labels.
 
-The original BBC category labels are **not supplied to K-Means during training**.
+The original labels are retained only for:
 
-They are retained only for post-clustering evaluation.
+- cluster evaluation
+- cluster composition analysis
+- assigning a human-readable majority category to each numerical cluster
 
 ---
 
-## Final Cluster Composition
+# Final Cluster Composition
 
-### Cluster 0 — Economics
-
-```text
-Economics:     42
-Entertainment:  2
-Politics:       5
-Total:         49
-```
-
-### Cluster 1 — Politics
+## Cluster 0 - Economics
 
 ```text
-Economics:      6
-Entertainment:  2
-Politics:      45
-Total:         53
+Economics:      42
+Entertainment:   2
+Politics:        5
+Total:          49
 ```
 
-### Cluster 2 — Entertainment
+---
+
+## Cluster 1 - Politics
 
 ```text
-Economics:      2
-Entertainment: 46
-Politics:       0
-Total:         48
+Economics:       6
+Entertainment:   2
+Politics:       45
+Total:          53
 ```
 
-Total documents:
+---
+
+## Cluster 2 - Entertainment
+
+```text
+Economics:       2
+Entertainment:  46
+Politics:        0
+Total:          48
+```
+
+Combined total:
 
 ```text
 49 + 53 + 48 = 150
 ```
 
-The discovered clusters therefore show strong correspondence with the original BBC topics.
+The resulting clusters show meaningful correspondence with the original BBC categories.
 
 ---
 
-## Clustering Evaluation
+# Clustering Evaluation
 
-Three evaluation measures are calculated.
+The implementation calculates three evaluation metrics.
 
-### Silhouette Score
+---
+
+## Silhouette Score
 
 ```text
 0.0186
 ```
 
-The silhouette score measures internal separation and cohesion without requiring known category labels.
+The Silhouette Score measures internal cluster cohesion and separation without requiring the known BBC labels.
 
-The relatively low value indicates substantial vocabulary overlap between the three news categories.
+The relatively low value indicates that the sparse TF-IDF representations of the three news categories contain substantial vocabulary overlap.
 
-### Adjusted Rand Index
+---
+
+## Adjusted Rand Index
 
 ```text
 0.6902
 ```
 
-The Adjusted Rand Index compares the discovered K-Means grouping with the original BBC categories while correcting for agreement expected by chance.
+The Adjusted Rand Index compares the discovered K-Means grouping with the original BBC topic labels while correcting for agreement expected by chance.
 
-### Normalized Mutual Information
+---
+
+## Normalized Mutual Information
 
 ```text
 0.6387
 ```
 
-Normalized Mutual Information measures shared information between the discovered clusters and the known document topics.
+Normalized Mutual Information measures the amount of information shared between the discovered K-Means clusters and the known BBC topic categories.
 
-Together, ARI and NMI indicate that the unsupervised clusters correspond reasonably well with the original categories even though those labels were not used during K-Means training.
+Together, ARI and NMI indicate meaningful correspondence between the unsupervised clusters and the original topics even though the category labels were not supplied during K-Means training.
 
 ---
 
-## New Document Prediction
+# New Document Prediction
 
-The clustering interface allows a user to paste a completely new document.
+The Django clustering interface allows a user to submit a completely new document.
 
-The system:
-
-1. Loads the existing BBC document collection
-2. Builds the TF-IDF representation
-3. Fits K-Means using the existing collection
-4. Transforms the new document using the same TF-IDF vocabulary
-5. Finds its nearest K-Means centroid
-6. Returns the predicted cluster
-7. Maps the numeric cluster to its majority topic category
-
-Example Economics-style input:
+The prediction workflow is:
 
 ```text
-The central bank raised interest rates after inflation remained high.
-Financial markets reacted to the decision while businesses warned
-that higher borrowing costs could reduce investment, consumer
-spending and economic growth.
+User Document
+     |
+     v
+TF-IDF Transformation
+     |
+     v
+Existing Feature Space
+     |
+     v
+K-Means Prediction
+     |
+     v
+Nearest Centroid
+     |
+     v
+Predicted Cluster
+     |
+     v
+Majority Topic Category
+     |
+     v
+Save Prediction to Oracle
+```
+
+The system returns:
+
+- Predicted cluster
+- Predicted category
+- Distance to centroid
+
+---
+
+# Example Economics Prediction
+
+Example input:
+
+```text
+Economic growth slowed as inflation remained high and the central bank considered changes to interest rates. Investors watched financial markets closely while businesses reported weaker consumer spending and rising costs.
 ```
 
 Verified result:
 
 ```text
-Predicted cluster: 0
-Predicted category: Economics
-Distance to centroid: 0.9840
+Predicted cluster:      0
+Predicted category:     Economics
+Distance to centroid:   0.9904
 ```
 
 ---
 
-## Django Clustering Interface
+# Example Politics Prediction
 
-The clustering interface is available at:
+Example input:
+
+```text
+The government announced a new parliamentary bill after ministers debated public spending and national policy. Opposition parties criticised the proposal and called for further discussion before a vote in parliament.
+```
+
+Verified result:
+
+```text
+Predicted cluster:      1
+Predicted category:     Politics
+Distance to centroid:   1.0104
+```
+
+The centroid distance is a distance measure in the fitted TF-IDF feature space and is not a probability value.
+
+---
+
+# Prediction Persistence
+
+Every successful prediction is saved automatically to Oracle.
+
+Prediction records are stored in:
+
+```text
+CLUSTER_PREDICTIONS
+```
+
+The table contains:
+
+```text
+PREDICTION_ID
+DOCUMENT_TEXT
+PREDICTED_CLUSTER
+PREDICTED_CATEGORY
+DISTANCE_TO_CENTROID
+PREDICTED_AT
+```
+
+Predictions are deliberately **not added to `CLUSTER_DOCUMENTS`**.
+
+Therefore:
+
+```text
+Original BBC clustering documents = 150
+```
+
+remains unchanged even after users make predictions.
+
+---
+
+# Prediction History
+
+The Django interface displays prediction history retrieved directly from Oracle.
+
+The history includes:
+
+- Date and time
+- Predicted category
+- Predicted cluster
+- Distance to centroid
+- Document preview
+
+The ten most recent predictions are displayed.
+
+The interface also shows the total number of saved predictions.
+
+Newest predictions appear first.
+
+---
+
+# Prediction Timezone Handling
+
+The Django project uses:
+
+```python
+TIME_ZONE = "Asia/Kathmandu"
+USE_TZ = True
+```
+
+Timestamps remain timezone-aware internally.
+
+The web interface converts stored timestamps to Kathmandu local time and displays them in a readable format such as:
+
+```text
+18 Aug 2026, 10:56 PM
+```
+
+rather than exposing raw Oracle timestamp precision such as:
+
+```text
+18-AUG-26 05.11.05.283510000 PM
+```
+
+---
+
+# Django Clustering Interface
+
+The Task 2 interface is available at:
 
 ```text
 http://127.0.0.1:8000/clustering/
 ```
 
-The page displays:
+The final interface displays:
 
-- Dataset size
-- BBC attribution
+- Dataset source
+- Total document count
 - Category counts
-- Clustering evaluation metrics
+- Silhouette Score
+- Adjusted Rand Index
+- Normalized Mutual Information
+- TF-IDF feature count
+- Discovered K-Means clusters
 - Cluster composition
-- New-document text input
+- New-document prediction form
 - Predicted cluster
-- Predicted topic
+- Predicted category
 - Distance to centroid
+- Prediction-save confirmation
+- Oracle-backed prediction history
 
 ---
 
-# Django Dashboard
+# Coursework Dashboard
 
-The main application dashboard is available at:
+The main Django dashboard is available at:
 
 ```text
 http://127.0.0.1:8000/
 ```
 
-The dashboard displays live Oracle-backed statistics for both tasks.
+The dashboard retrieves system statistics dynamically from Oracle.
 
-Current Task 1 statistics:
+Current verified Task 1 state:
 
 ```text
-Researchers: 18
-Publications: 68
-Indexed documents: 68
-Vocabulary terms: 3601
-Inverted-index postings: 8527
+Researchers:              18
+Research outputs:         81
+Indexed documents:        81
+Vocabulary terms:         4,240
+Inverted-index postings: 10,042
 ```
 
-Current Task 2 statistics:
+Current Task 2 state:
 
 ```text
 Clustering documents: 150
+Categories:            3
+Algorithm:             K-Means
 ```
 
-Both assessed components are accessible directly from the dashboard.
+The dashboard provides direct navigation to both assessed coursework components.
+
+Task 1 publication and index totals are not hard-coded into the dashboard.
+
+---
+
+# Oracle Database Tables
+
+## Task 1 Tables
+
+```text
+RESEARCHERS
+PUBLICATIONS
+PUBLICATION_RESEARCHERS
+TERM_INDEX
+DOC_VECTORS
+INVERTED_INDEX
+```
+
+---
+
+## Task 2 Tables
+
+```text
+CLUSTER_DOCUMENTS
+CLUSTER_PREDICTIONS
+```
+
+The complete clean-install Oracle schema is provided in:
+
+```text
+database_setup.sql
+```
+
+The corresponding Django models use:
+
+```python
+managed = False
+```
+
+because the coursework tables are managed directly in Oracle.
+
+---
+
+# Database Schema Summary
+
+```text
+RESEARCHERS
+    |
+    | many-to-many
+    |
+PUBLICATION_RESEARCHERS
+    |
+    v
+PUBLICATIONS
+    |
+    +------------------+
+    |                  |
+    v                  v
+DOC_VECTORS       INVERTED_INDEX
+                       |
+                       v
+                   TERM_INDEX
+
+
+CLUSTER_DOCUMENTS
+        |
+        v
+   TF-IDF + K-Means
+        |
+        v
+ New Document Prediction
+        |
+        v
+CLUSTER_PREDICTIONS
+```
 
 ---
 
@@ -569,33 +1149,19 @@ The project uses:
 - Oracle Database
 - Oracle SQL Developer
 - python-oracledb
-- BeautifulSoup
 - Requests
+- BeautifulSoup
 - Selenium
 - scikit-learn
 - TF-IDF
+- Cosine similarity
+- Inverted indexing
 - K-Means
 - HTML
 - CSS
 - Windows Task Scheduler
 
----
-
-# Main Python Dependencies
-
-Important dependency versions include:
-
-```text
-beautifulsoup4==4.15.0
-Django==5.2.17
-oracledb==4.0.2
-python-dotenv==1.2.2
-requests==2.34.2
-scikit-learn==1.9.0
-selenium==4.46.0
-```
-
-The complete dependency list is stored in:
+Exact Python dependency versions are stored in:
 
 ```text
 requirements.txt
@@ -605,108 +1171,80 @@ requirements.txt
 
 # Project Structure
 
-The main coursework structure is:
-
 ```text
 assignment/
-│
-├── manage.py
-├── README.md
-├── requirements.txt
-├── database_setup.sql
-├── run_weekly_search_update.bat
-├── .env
-│
-├── ir_coursework/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
-│
-├── core/
-│   ├── views.py
-│   ├── urls.py
-│   ├── templates/
-│   └── static/
-│
-├── search_engine/
-│   ├── models.py
-│   ├── views.py
-│   ├── urls.py
-│   ├── templates/
-│   │   └── search_engine/
-│   │       └── search.html
-│   │
-│   ├── services/
-│   │   ├── crawler.py
-│   │   └── indexer.py
-│   │
-│   └── management/
-│       └── commands/
-│           └── update_search_index.py
-│
-└── clustering/
-    ├── models.py
-    ├── views.py
-    ├── urls.py
-    ├── services.py
-    ├── data_loader.py
-    │
-    ├── templates/
-    │   └── clustering/
-    │       └── clustering.html
-    │
-    └── data/
-        └── bbc-fulltext/
+|
++-- manage.py
++-- README.md
++-- requirements.txt
++-- database_setup.sql
++-- run_weekly_search_update.bat
++-- .env.example
+|
++-- ir_coursework/
+|   +-- settings.py
+|   +-- urls.py
+|   +-- asgi.py
+|   +-- wsgi.py
+|
++-- core/
+|   +-- views.py
+|   +-- urls.py
+|   |
+|   +-- templates/
+|   |   +-- core/
+|   |       +-- home.html
+|   |
+|   +-- static/
+|       +-- core/
+|           +-- style.css
+|
++-- search_engine/
+|   +-- models.py
+|   +-- views.py
+|   +-- urls.py
+|   |
+|   +-- templates/
+|   |   +-- search_engine/
+|   |       +-- search.html
+|   |
+|   +-- services/
+|   |   +-- crawler.py
+|   |   +-- indexer.py
+|   |
+|   +-- management/
+|       +-- commands/
+|           +-- update_search_index.py
+|
++-- clustering/
+    +-- models.py
+    +-- views.py
+    +-- urls.py
+    +-- services.py
+    +-- data_loader.py
+    |
+    +-- templates/
+        +-- clustering/
+            +-- clustering.html
 ```
 
----
-
-# Oracle Database
-
-Oracle Database is used as the main persistent datastore.
-
-Oracle SQL Developer is used to inspect and manage the database.
-
-## Task 1 Tables
-
-Custom Task 1 tables include:
-
-```text
-RESEARCHERS
-PUBLICATIONS
-PUBLICATION_RESEARCHERS
-TERM_INDEX
-DOC_VECTORS
-INVERTED_INDEX
-```
-
-Existing crawler-support tables may also include:
-
-```text
-RAW_PAGES
-CRAWL_LOG
-```
-
-## Task 2 Table
-
-Task 2 uses:
-
-```text
-CLUSTER_DOCUMENTS
-```
-
-The custom table definitions required for a clean installation are provided in:
-
-```text
-database_setup.sql
-```
+Sensitive `.env` credentials are excluded from the public repository.
 
 ---
 
 # Installation and Setup
 
-## 1. Create a Virtual Environment
+## 1. Clone the Repository
+
+```powershell
+git clone https://github.com/mausambh/ST7071CEM-Information-Retrieval-Coursework.git
+```
+
+Enter the project directory.
+
+---
+
+## 2. Create a Virtual Environment
 
 Example:
 
@@ -714,13 +1252,11 @@ Example:
 python -m venv .venv
 ```
 
-Activate it using the appropriate command for the operating system.
+Activate the virtual environment using the appropriate command for the operating system.
 
 ---
 
-## 2. Install Dependencies
-
-From the project directory:
+## 3. Install Dependencies
 
 ```powershell
 pip install -r requirements.txt
@@ -728,37 +1264,45 @@ pip install -r requirements.txt
 
 ---
 
-## 3. Configure Oracle Database
+## 4. Configure Oracle Database
 
 Create or use an Oracle user for the coursework.
 
-The implementation uses:
+The development installation uses:
 
 ```text
 IR_USER
 ```
 
-Run:
+For a new clean Oracle schema, run:
 
 ```text
 database_setup.sql
 ```
 
-in Oracle SQL Developer when setting up a **new clean database**.
+through Oracle SQL Developer.
 
-Do not run the setup script unnecessarily on an existing populated database because the custom tables may already exist.
+Do not run the setup script against an already populated coursework schema unless the existing custom tables have first been handled appropriately.
 
 ---
 
-## 4. Configure Environment Variables
+## 5. Configure Environment Variables
 
 Create:
 
 ```text
-assignment\.env
+.env
 ```
 
-Example:
+using:
+
+```text
+.env.example
+```
+
+as the template.
+
+Example configuration:
 
 ```env
 ORACLE_USER=IR_USER
@@ -766,11 +1310,11 @@ ORACLE_PASSWORD=YOUR_ORACLE_PASSWORD
 ORACLE_DSN=localhost:1521/FREEPDB1
 ```
 
-Real database passwords must not be committed or included in submitted screenshots.
+Real database credentials must never be committed to GitHub.
 
 ---
 
-## 5. Create Django Framework Tables
+## 6. Create Django Framework Tables
 
 Run:
 
@@ -778,13 +1322,13 @@ Run:
 python manage.py migrate
 ```
 
-This creates Django's own framework tables for components such as authentication and sessions.
+Django's framework tables are created through migrations.
 
-The custom coursework tables are managed separately through Oracle.
+The custom coursework tables are managed separately through Oracle and `database_setup.sql`.
 
 ---
 
-## 6. Verify Django Configuration
+## 7. Verify the Django Project
 
 Run:
 
@@ -792,7 +1336,7 @@ Run:
 python manage.py check
 ```
 
-A successful configuration should report:
+Verified output:
 
 ```text
 System check identified no issues (0 silenced).
@@ -800,7 +1344,7 @@ System check identified no issues (0 silenced).
 
 ---
 
-## 7. Run the Django Application
+## 8. Start the Django Application
 
 Run:
 
@@ -808,19 +1352,21 @@ Run:
 python manage.py runserver
 ```
 
-Open the dashboard:
+Then open the following pages.
+
+### Coursework Dashboard
 
 ```text
 http://127.0.0.1:8000/
 ```
 
-Vertical Search Engine:
+### Vertical Search Engine
 
 ```text
 http://127.0.0.1:8000/search/
 ```
 
-Document Clustering:
+### Document Clustering
 
 ```text
 http://127.0.0.1:8000/clustering/
@@ -828,27 +1374,35 @@ http://127.0.0.1:8000/clustering/
 
 ---
 
-# Updating Task 1
+# Running Task 1 Scheduled Maintenance
 
-To refresh Centre researchers, publications, and the search index:
+Run manually with:
 
 ```powershell
 python manage.py update_search_index
 ```
 
-Alternatively run:
+or execute:
 
 ```text
 run_weekly_search_update.bat
 ```
 
-The batch file is intended for use with Windows Task Scheduler.
+The scheduled command:
+
+1. Reads the stored PurePortal publication URLs from Oracle
+2. Refreshes the publication detail pages
+3. Updates stored publication information
+4. Rebuilds the TF-IDF index
+5. Rebuilds the inverted index
+
+Full official Centre-listing discovery remains a separate approved-browser operation.
 
 ---
 
 # Reproducibility
 
-Important random operations use fixed seeds.
+Task 2 uses fixed random values to make the experiment reproducible.
 
 BBC sampling:
 
@@ -863,73 +1417,175 @@ random_state = 42
 n_init = 20
 ```
 
-This allows the main clustering experiment to be reproduced consistently.
+The clustering experiment can therefore be reproduced consistently using the same source dataset and configuration.
 
 ---
 
 # Security
 
-Sensitive configuration is stored in:
+Sensitive Oracle configuration is stored in:
 
 ```text
 .env
 ```
 
-and should not be committed to a public repository or included in submitted source files containing real credentials.
+The `.env` file is not intended to be committed to the public repository.
 
-The application source code reads Oracle credentials from environment variables rather than hard-coding passwords inside Django settings.
-
----
-
-# Ethical Crawling
-
-The Task 1 crawler is designed to behave politely.
-
-It:
-
-- Reads `robots.txt`
-- Checks permission before requesting pages
-- Uses a descriptive coursework user agent
-- Respects the site's five-second crawl delay
-- Avoids attempts to bypass HTTP `403` restrictions
-- Caches parsed `robots.txt` rules during a crawler run
-- Deduplicates publication URLs
-- Updates existing database records instead of unnecessarily creating duplicates
-
----
-
-# Final Verified System Summary
-
-The final implementation was verified with the following results:
+A safe configuration template is provided as:
 
 ```text
-=== ST7071CEM FINAL SYSTEM SUMMARY ===
+.env.example
+```
+
+The Django project loads database credentials from environment variables rather than hard-coding passwords directly into the application source.
+
+The final project does not contain unused external publication API credentials.
+
+---
+
+# Database Setup Script
+
+A clean installation can create the custom Oracle coursework tables using:
+
+```text
+database_setup.sql
+```
+
+The script creates:
+
+```text
+RESEARCHERS
+PUBLICATIONS
+PUBLICATION_RESEARCHERS
+TERM_INDEX
+DOC_VECTORS
+INVERTED_INDEX
+CLUSTER_DOCUMENTS
+CLUSTER_PREDICTIONS
+```
+
+It also creates useful database indexes and includes optional verification queries.
+
+The script should not be executed against the already populated development schema because the tables already exist there.
+
+---
+
+# Final Verified System State
+
+```text
+============================================================
+ST7071CEM FINAL SYSTEM STATE
+============================================================
 
 TASK 1 - VERTICAL SEARCH ENGINE
-Researchers: 18
-Publications: 68
-Publication-Researcher links: 94
-Indexed documents: 68
-Vocabulary terms: 3601
-Inverted-index postings: 8527
+
+Verified Centre researchers:   18
+Official research outputs:     81
+Indexed documents:             81
+Vocabulary terms:            4,240
+Inverted-index postings:     10,042
+
+Scheduled refresh test:
+
+Stored URLs processed:         81
+Successfully refreshed:        81
+Skipped:                        0
+Errors:                         0
+
+Search index rebuild:
+
+Documents:                     81
+Terms:                       4,240
+Postings:                   10,042
+
 
 TASK 2 - DOCUMENT CLUSTERING
-Documents: 150
-Economics: 50
-Entertainment: 50
-Politics: 50
-Silhouette Score: 0.0186
-Adjusted Rand Index: 0.6902
-Normalized Mutual Information: 0.6387
-TF-IDF Features: 3094
+
+Documents:                    150
+
+Economics:                     50
+Entertainment:                 50
+Politics:                      50
+
+TF-IDF features:            3,094
+
+Silhouette Score:          0.0186
+Adjusted Rand Index:       0.6902
+Normalized Mutual Info:    0.6387
+
+
+CLUSTER COMPOSITION
+
+Cluster 0 - Economics
+
+Economics:                     42
+Entertainment:                  2
+Politics:                       5
+Total:                         49
+
+
+Cluster 1 - Politics
+
+Economics:                      6
+Entertainment:                  2
+Politics:                      45
+Total:                         53
+
+
+Cluster 2 - Entertainment
+
+Economics:                      2
+Entertainment:                 46
+Politics:                       0
+Total:                         48
+
+
+ADDITIONAL TASK 2 FUNCTIONALITY
+
+- New-document cluster prediction
+- Predicted topic category
+- Distance-to-centroid calculation
+- Oracle prediction persistence
+- Prediction history
+- Kathmandu local-time display
+
+============================================================
 ```
 
 ---
 
-# Coursework Note
+# GitHub Repository
+
+The coursework source repository is:
+
+```text
+https://github.com/mausambh/ST7071CEM-Information-Retrieval-Coursework
+```
+
+The repository contains:
+
+- Django applications
+- Oracle database setup script
+- PurePortal crawler
+- TF-IDF indexer
+- Inverted index
+- Cosine-similarity retrieval system
+- BBC News data loader
+- K-Means clustering implementation
+- Clustering evaluation
+- New-document prediction
+- Oracle-backed prediction history
+- Web templates
+- Scheduled update command
+
+Sensitive `.env` credentials and non-submission data files must remain excluded from version control.
+
+---
+
+# Coursework Use
 
 This project was developed for educational purposes as part of the **ST7071CEM Information Retrieval** coursework.
 
-External publication metadata, research content, and BBC News documents remain subject to the copyright and usage conditions of their respective original sources.
+Coventry University PurePortal metadata and BBC News content remain subject to the rights and usage conditions of their respective owners.
 
-The application is intended for coursework demonstration and research/educational use.
+The implementation is intended for coursework demonstration, evaluation, research, and educational use.

@@ -2,132 +2,1206 @@
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
 
-    <title>Vertical Search Engine</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <!-- Reuse the main coursework styling already used by the dashboard. -->
-    <link rel="stylesheet" href="{% static 'core/style.css' %}" />
-  </head>
+    <title>
+        Coventry Research Output Search
+    </title>
 
-  <body>
-    <header>
-      <h1>Coventry Research Search</h1>
-      <p>Centre for Healthcare and Community Transformation</p>
+    <link
+        rel="stylesheet"
+        href="{% static 'core/style.css' %}"
+    >
+
+    <style>
+        :root {
+            --navy: #173f6d;
+            --navy-dark: #102f52;
+            --blue: #2563eb;
+            --blue-soft: #eff6ff;
+            --background: #f5f7fa;
+            --card: #ffffff;
+            --text: #172033;
+            --muted: #64748b;
+            --border: #dfe5ec;
+            --success-soft: #ecfdf5;
+            --success-text: #047857;
+            --shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+
+        body {
+            margin: 0;
+            background: var(--background);
+            color: var(--text);
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+            line-height: 1.6;
+        }
+
+
+        /* =====================================================
+           STICKY HEADER
+           ===================================================== */
+
+        .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+
+    background: var(--navy);
+    color: white;
+
+    box-shadow:
+        0 2px 8px
+        rgba(15, 23, 42, 0.14);
+}
+
+
+.header-inner {
+    max-width: 1440px;
+    margin: 0 auto;
+
+    min-height: 64px;
+
+    padding:
+        10px
+        28px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+
+.header-title h1 {
+    margin: 0;
+
+    font-size: 1.35rem;
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+}
+
+
+.header-title p {
+    margin:
+        3px
+        0
+        0;
+
+    color: #dce9f7;
+
+    font-size: 0.82rem;
+}
+
+
+.home-button {
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    padding:
+        7px
+        13px;
+
+    border:
+        1px
+        solid
+        rgba(255, 255, 255, 0.3);
+
+    border-radius: 7px;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    color: white;
+
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 650;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+
+.home-button:hover {
+    background:
+        rgba(255, 255, 255, 0.16);
+
+    border-color:
+        rgba(255, 255, 255, 0.55);
+}
+
+
+        /* =====================================================
+           MAIN PAGE
+           ===================================================== */
+
+        .page-container {
+            width: min(
+                1440px,
+                calc(100% - 48px)
+            );
+
+            margin: 0 auto;
+
+            padding:
+                42px
+                0
+                70px;
+        }
+
+
+        /* =====================================================
+           SEARCH HERO
+           ===================================================== */
+
+        .search-panel {
+            padding:
+                32px
+                34px;
+
+            background: var(--card);
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 16px;
+
+            box-shadow: var(--shadow);
+        }
+
+
+        .search-panel h2 {
+            margin:
+                0
+                0
+                8px;
+
+            font-size: 1.65rem;
+
+            letter-spacing: -0.02em;
+        }
+
+
+        .search-description {
+            margin:
+                0
+                0
+                24px;
+
+            max-width: 1000px;
+
+            color: var(--muted);
+
+            font-size: 1rem;
+        }
+
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+
+            max-width: 900px;
+        }
+
+
+        .search-input {
+            flex: 1;
+
+            min-width: 0;
+
+            height: 50px;
+
+            padding:
+                0
+                17px;
+
+            border:
+                1px
+                solid
+                #cbd5e1;
+
+            border-radius: 10px;
+
+            background: #ffffff;
+
+            color: var(--text);
+
+            font-size: 1rem;
+
+            outline: none;
+
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+
+        .search-input:focus {
+            border-color: var(--blue);
+
+            box-shadow:
+                0 0 0 3px
+                rgba(37, 99, 235, 0.12);
+        }
+
+
+        .search-button {
+            min-width: 120px;
+
+            height: 50px;
+
+            padding:
+                0
+                22px;
+
+            border: 0;
+
+            border-radius: 10px;
+
+            background: var(--blue);
+
+            color: white;
+
+            font-size: 1rem;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .search-button:hover {
+            background: #1d4ed8;
+
+            transform:
+                translateY(-1px);
+        }
+
+
+        /* =====================================================
+           RESULTS HEADER
+           ===================================================== */
+
+        .results-section {
+            margin-top: 38px;
+        }
+
+
+        .results-heading-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 20px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .results-heading-row h2 {
+            margin: 0;
+
+            font-size: 1.65rem;
+
+            letter-spacing: -0.02em;
+        }
+
+
+        .results-summary {
+            margin:
+                5px
+                0
+                0;
+
+            color: var(--muted);
+        }
+
+
+        .ranking-note {
+            padding:
+                7px
+                12px;
+
+            border-radius: 999px;
+
+            background: var(--blue-soft);
+
+            color: #1d4ed8;
+
+            font-size: 0.86rem;
+            font-weight: 650;
+
+            white-space: nowrap;
+        }
+
+
+        /* =====================================================
+           RESULT CARDS
+           ===================================================== */
+
+        .results-list {
+            display: grid;
+            gap: 20px;
+        }
+
+
+        .result-card {
+            position: relative;
+
+            padding:
+                26px
+                30px;
+
+            background: var(--card);
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 15px;
+
+            box-shadow:
+                0 4px 18px
+                rgba(15, 23, 42, 0.055);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+
+        .result-card:hover {
+            transform:
+                translateY(-2px);
+
+            border-color: #c8d4e3;
+
+            box-shadow:
+                0 9px 28px
+                rgba(15, 23, 42, 0.09);
+        }
+
+
+        .result-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+
+            gap: 12px;
+
+            margin-bottom: 14px;
+        }
+
+
+        .result-badges {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+
+            padding:
+                5px
+                10px;
+
+            border-radius: 999px;
+
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+
+        .rank-badge {
+            background: var(--navy);
+            color: white;
+        }
+
+
+        .type-badge {
+            background: var(--blue-soft);
+            color: #1d4ed8;
+        }
+
+
+        .source-badge {
+            background: var(--success-soft);
+            color: var(--success-text);
+        }
+
+
+        .similarity {
+            color: var(--muted);
+
+            font-size: 0.9rem;
+        }
+
+
+        .similarity strong {
+            color: var(--text);
+        }
+
+
+        .result-title {
+            margin:
+                0
+                0
+                17px;
+
+            font-size: 1.3rem;
+            line-height: 1.4;
+
+            letter-spacing: -0.01em;
+        }
+
+
+        .result-title a {
+            color: #174ea6;
+
+            text-decoration: none;
+        }
+
+
+        .result-title a:hover {
+            color: #0b57d0;
+
+            text-decoration: underline;
+        }
+
+
+        /* =====================================================
+           METADATA
+           ===================================================== */
+
+        .metadata-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+
+            gap:
+                13px
+                28px;
+
+            margin:
+                0
+                0
+                18px;
+
+            padding:
+                17px
+                0;
+
+            border-top:
+                1px
+                solid
+                #edf1f5;
+
+            border-bottom:
+                1px
+                solid
+                #edf1f5;
+        }
+
+
+        .meta-item {
+            min-width: 0;
+        }
+
+
+        .meta-label {
+            display: block;
+
+            margin-bottom: 3px;
+
+            color: var(--muted);
+
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.055em;
+        }
+
+
+        .meta-value {
+            color: var(--text);
+
+            font-size: 0.95rem;
+        }
+
+
+        /* =====================================================
+           CLICKABLE AUTHORS
+           ===================================================== */
+
+        .authors-block {
+            margin-bottom: 18px;
+        }
+
+
+        .authors-label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: var(--muted);
+
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.055em;
+        }
+
+
+        .authors-list {
+            color: #334155;
+
+            font-size: 0.95rem;
+            line-height: 1.75;
+        }
+
+
+        .author-link {
+            color: #174ea6;
+
+            text-decoration: none;
+
+            font-weight: 600;
+        }
+
+
+        .author-link:hover {
+            text-decoration: underline;
+        }
+
+
+        .profile-indicator {
+            display: inline-block;
+
+            margin-left: 2px;
+
+            color: #64748b;
+
+            font-size: 0.75rem;
+            vertical-align: top;
+        }
+
+
+        /* =====================================================
+           ABSTRACT
+           ===================================================== */
+
+        .abstract-block {
+            margin-top: 16px;
+        }
+
+
+        .abstract-block h4 {
+            margin:
+                0
+                0
+                7px;
+
+            color: #334155;
+
+            font-size: 0.92rem;
+        }
+
+
+        .abstract-block p {
+            margin: 0;
+
+            color: #475569;
+
+            font-size: 0.95rem;
+            line-height: 1.72;
+        }
+
+
+        /* =====================================================
+           CARD FOOTER
+           ===================================================== */
+
+        .result-footer {
+            display: flex;
+            justify-content: flex-end;
+
+            margin-top: 20px;
+        }
+
+
+        .record-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            padding:
+                9px
+                14px;
+
+            border:
+                1px
+                solid
+                #cbd5e1;
+
+            border-radius: 8px;
+
+            color: #174ea6;
+
+            background: white;
+
+            text-decoration: none;
+
+            font-size: 0.9rem;
+            font-weight: 650;
+
+            transition:
+                background 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+
+        .record-link:hover {
+            background: var(--blue-soft);
+            border-color: #93b4e8;
+        }
+
+
+        /* =====================================================
+           EMPTY STATE
+           ===================================================== */
+
+        .empty-state {
+            padding: 35px;
+
+            background: white;
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 14px;
+
+            text-align: center;
+
+            color: var(--muted);
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+           ===================================================== */
+
+        @media (max-width: 800px) {
+
+            .header-inner {
+                padding:
+                    14px
+                    20px;
+            }
+
+
+            .header-title h1 {
+                font-size: 1.3rem;
+            }
+
+
+            .header-title p {
+                font-size: 0.84rem;
+            }
+
+
+            .home-button {
+                padding:
+                    9px
+                    12px;
+            }
+
+
+            .page-container {
+                width:
+                    min(
+                        100% - 28px,
+                        1440px
+                    );
+
+                padding-top: 24px;
+            }
+
+
+            .search-panel {
+                padding:
+                    24px
+                    20px;
+            }
+
+
+            .search-form {
+                flex-direction: column;
+            }
+
+
+            .search-button {
+                width: 100%;
+            }
+
+
+            .results-heading-row {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+
+            .result-card {
+                padding:
+                    22px
+                    20px;
+            }
+
+
+            .metadata-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         STICKY HEADER
+         ===================================================== -->
+
+    <header class="site-header">
+
+        <div class="header-inner">
+
+            <div class="header-title">
+
+                <h1>
+                    Coventry Research Output Search
+                </h1>
+
+                <p>
+                    Centre for Healthcare and Community Transformation
+                </p>
+
+            </div>
+
+
+            <a
+                href="/"
+                class="home-button"
+            >
+                ← Home
+            </a>
+
+        </div>
+
     </header>
 
-    <main>
-      <section>
-        <h2>Search Publications</h2>
 
-        <p>
-          Search research publications authored by verified members of Coventry
-          University's Centre for Healthcare and Community Transformation.
-        </p>
+    <main class="page-container">
 
-        <form method="get">
-          <input
-            type="text"
-            name="q"
-            value="{{ query }}"
-            placeholder="Enter keywords, e.g. mental health stress"
-            required
-          />
+        <!-- =================================================
+             SEARCH PANEL
+             ================================================= -->
 
-          <button type="submit">Search</button>
-        </form>
-      </section>
+        <section class="search-panel">
 
-      {% if query %}
+            <h2>
+                Search Research Outputs
+            </h2>
 
-      <section>
-        <h2>Search Results</h2>
+            <p class="search-description">
 
-        <p>
-          {{ result_count }} ranked result{{ result_count|pluralize }} for
-          <strong>"{{ query }}"</strong>
-        </p>
+                Search the official Coventry PurePortal research outputs
+                associated with the Centre for Healthcare and Community
+                Transformation. Results are ranked using TF-IDF weighting
+                and cosine similarity.
 
-        {% if results %} {% for result in results %}
+            </p>
 
-        <article class="task-card">
-          <p>
-            <strong> Rank {{ result.rank }} </strong>
 
-            | Relevance score: {{ result.score|floatformat:4 }}
-          </p>
-
-          <h3>
-            <a
-              href="{{ result.publication.publication_url }}"
-              target="_blank"
-              rel="noopener noreferrer"
+            <form
+                method="get"
+                class="search-form"
             >
-              {{ result.publication.title }}
-            </a>
-          </h3>
 
-          <p>
-            <strong>Authors:</strong>
-            {{ result.publication.authors }}
-          </p>
+                <input
+                    class="search-input"
+                    type="search"
+                    name="q"
+                    value="{{ query }}"
+                    placeholder="Search by topic, author or keyword..."
+                    aria-label="Search research outputs"
+                    required
+                >
 
-          <p>
-            <strong>Verified Centre authors:</strong>
 
-            {% for link in result.publication.publicationresearcher_set.all %}
+                <button
+                    class="search-button"
+                    type="submit"
+                >
+                    Search
+                </button>
 
-            <a
-              href="{{ link.researcher.profile_url }}"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {{ link.researcher.name }}
-            </a>
+            </form>
 
-            {% if not forloop.last %} ; {% endif %} {% empty %}
+        </section>
 
-            <em>No linked Centre researcher profile available.</em>
 
-            {% endfor %}
-          </p>
+        <!-- =================================================
+             SEARCH RESULTS
+             ================================================= -->
 
-          <p>
-            <strong>Journal:</strong>
-            {{ result.publication.journal }}
-          </p>
+        {% if query %}
 
-          <p>
-            <strong>Publication year:</strong>
-            {{ result.publication.publication_year }}
-          </p>
+        <section class="results-section">
 
-          {% if result.publication.abstract %}
+            <div class="results-heading-row">
 
-          <p>
-            <strong>Abstract:</strong>
-            {{ result.publication.abstract|truncatewords:55 }}
-          </p>
+                <div>
 
-          {% else %}
+                    <h2>
+                        Ranked Search Results
+                    </h2>
 
-          <p>
-            <em> Abstract not available from PurePortal. </em>
-          </p>
+                    <p class="results-summary">
 
-          {% endif %}
-        </article>
+                        {{ result_count }}
+                        ranked result{{ result_count|pluralize }}
+                        for
 
-        {% endfor %} {% else %}
+                        <strong>
+                            "{{ query }}"
+                        </strong>
 
-        <p>No indexed publications matched this query.</p>
+                    </p>
+
+                </div>
+
+
+                {% if results %}
+
+                <div class="ranking-note">
+                    TF-IDF + Cosine Similarity
+                </div>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if results %}
+
+            <div class="results-list">
+
+                {% for result in results %}
+
+                <article class="result-card">
+
+                    <!-- =====================================
+                         RESULT HEADER
+                         ===================================== -->
+
+                    <div class="result-top-row">
+
+                        <div class="result-badges">
+
+                            <span class="badge rank-badge">
+                                Rank {{ result.rank }}
+                            </span>
+
+
+                            {% if result.publication.publication_type %}
+
+                            <span class="badge type-badge">
+                                {{ result.publication.publication_type }}
+                            </span>
+
+                            {% endif %}
+
+
+                            <span class="badge source-badge">
+
+                                {% if result.publication.source_name %}
+
+                                    {{ result.publication.source_name }}
+
+                                {% else %}
+
+                                    Coventry PurePortal
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="similarity">
+
+                            TF-IDF Cosine Similarity:
+
+                            <strong>
+                                {{ result.score|floatformat:4 }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         TITLE
+                         ===================================== -->
+
+                    <h3 class="result-title">
+
+                        <a
+                            href="{{ result.publication.publication_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            {{ result.publication.title }}
+                        </a>
+
+                    </h3>
+
+
+                    <!-- =====================================
+                         METADATA
+                         ===================================== -->
+
+                    <div class="metadata-grid">
+
+                        <div class="meta-item">
+
+                            <span class="meta-label">
+                                Publication date
+                            </span>
+
+                            <span class="meta-value">
+
+                                {% if result.publication.publication_date %}
+
+                                    {{ result.publication.publication_date }}
+
+                                {% elif result.publication.publication_year %}
+
+                                    {{ result.publication.publication_year }}
+
+                                {% else %}
+
+                                    Not available
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+
+                        <div class="meta-item">
+
+                            <span class="meta-label">
+                                Research output type
+                            </span>
+
+                            <span class="meta-value">
+
+                                {% if result.publication.publication_type %}
+
+                                    {{ result.publication.publication_type }}
+
+                                {% else %}
+
+                                    Not available
+
+                                {% endif %}
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         AUTHORS
+                         ===================================== -->
+
+                    <div class="authors-block">
+
+                        <span class="authors-label">
+                            Authors
+                        </span>
+
+
+                        <div class="authors-list">
+
+                            {% for author in result.display_authors %}
+
+                                {% if author.profile_url %}
+
+                                    <a
+                                        class="author-link"
+                                        href="{{ author.profile_url }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="Open {{ author.name }}'s Coventry PurePortal profile"
+                                    >
+                                        {{ author.name }}
+                                        <span class="profile-indicator">↗</span>
+                                    </a>
+
+                                {% else %}
+
+                                    <span>
+                                        {{ author.name }}
+                                    </span>
+
+                                {% endif %}
+
+
+                                {% if not forloop.last %}
+                                    ;
+                                {% endif %}
+
+                            {% empty %}
+
+                                <em>
+                                    Author information not available.
+                                </em>
+
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         ABSTRACT
+                         ===================================== -->
+
+                    <div class="abstract-block">
+
+                        <h4>
+                            Abstract
+                        </h4>
+
+
+                        <p>
+
+                            {% if result.publication.abstract %}
+
+                                {{ result.publication.abstract|truncatewords:70 }}
+
+                            {% else %}
+
+                                <em>
+                                    Abstract not available from PurePortal.
+                                </em>
+
+                            {% endif %}
+
+                        </p>
+
+                    </div>
+
+
+                    <!-- =====================================
+                         ORIGINAL RECORD LINK
+                         ===================================== -->
+
+                    <div class="result-footer">
+
+                        <a
+                            class="record-link"
+                            href="{{ result.publication.publication_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            View on Coventry PurePortal ↗
+                        </a>
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+
+            {% else %}
+
+            <div class="empty-state">
+
+                No indexed research outputs matched
+
+                <strong>
+                    "{{ query }}"
+                </strong>.
+
+            </div>
+
+            {% endif %}
+
+        </section>
 
         {% endif %}
-      </section>
 
-      {% endif %}
     </main>
-  </body>
+
+</body>
 </html>

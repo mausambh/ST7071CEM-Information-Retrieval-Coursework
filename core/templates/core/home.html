@@ -2,128 +2,1177 @@
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <title>{{ module_code }} | Information Retrieval</title>
+    <title>
+        {{ module_code }} | Information Retrieval Coursework
+    </title>
 
-    <!--
-        Django's static template tag loads the stylesheet from the
-        core application's static directory.
-    -->
-    <link rel="stylesheet" href="{% static 'core/style.css' %}" />
-  </head>
+    <link
+        rel="stylesheet"
+        href="{% static 'core/style.css' %}"
+    >
 
-  <body>
-    <header>
-      <h1>Information Retrieval Coursework</h1>
-      <p>{{ module_code }} — Django Web Application</p>
+    <style>
+        :root {
+            --navy: #173f6d;
+            --navy-dark: #102f52;
+            --blue: #2563eb;
+            --blue-hover: #1d4ed8;
+
+            --background: #f5f7fa;
+            --card: #ffffff;
+
+            --text: #172033;
+            --muted: #64748b;
+
+            --border: #dfe5ec;
+
+            --blue-soft: #eff6ff;
+
+            --green-soft: #ecfdf5;
+            --green: #047857;
+
+            --red-soft: #fef2f2;
+            --red: #b91c1c;
+
+            --shadow:
+                0 8px 28px
+                rgba(15, 23, 42, 0.07);
+        }
+
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+
+        body {
+            margin: 0;
+
+            background: var(--background);
+            color: var(--text);
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Arial,
+                sans-serif;
+
+            line-height: 1.6;
+        }
+
+
+        /* =====================================================
+           COMPACT STICKY HEADER
+           ===================================================== */
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+
+            background: var(--navy);
+            color: white;
+
+            box-shadow:
+                0 2px 8px
+                rgba(15, 23, 42, 0.14);
+        }
+
+
+        .header-inner {
+            width:
+                min(
+                    1440px,
+                    calc(100% - 48px)
+                );
+
+            min-height: 68px;
+
+            margin: 0 auto;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 24px;
+        }
+
+
+        .brand h1 {
+            margin: 0;
+
+            font-size: 1.35rem;
+            line-height: 1.2;
+
+            font-weight: 750;
+            letter-spacing: -0.02em;
+        }
+
+
+        .brand p {
+            margin:
+                3px
+                0
+                0;
+
+            color: #dce9f7;
+
+            font-size: 0.82rem;
+        }
+
+
+        .module-badge {
+            display: inline-flex;
+            align-items: center;
+
+            padding:
+                7px
+                13px;
+
+            border:
+                1px
+                solid
+                rgba(255, 255, 255, 0.3);
+
+            border-radius: 8px;
+
+            background:
+                rgba(255, 255, 255, 0.08);
+
+            color: white;
+
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+
+        /* =====================================================
+           MAIN CONTAINER
+           ===================================================== */
+
+        .dashboard-container {
+            width:
+                min(
+                    1440px,
+                    calc(100% - 48px)
+                );
+
+            margin: 0 auto;
+
+            padding:
+                36px
+                0
+                70px;
+        }
+
+
+        /* =====================================================
+           INTRODUCTION
+           ===================================================== */
+
+        .intro-card {
+            padding:
+                30px
+                32px;
+
+            background: var(--card);
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 16px;
+
+            box-shadow: var(--shadow);
+
+            margin-bottom: 26px;
+        }
+
+
+        .intro-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+
+            gap: 24px;
+        }
+
+
+        .intro-card h2 {
+            margin:
+                0
+                0
+                7px;
+
+            font-size: 1.7rem;
+
+            letter-spacing: -0.02em;
+        }
+
+
+        .intro-card p {
+            margin: 0;
+
+            max-width: 900px;
+
+            color: var(--muted);
+
+            font-size: 1rem;
+        }
+
+
+        .coursework-pill {
+            flex-shrink: 0;
+
+            padding:
+                7px
+                13px;
+
+            border-radius: 999px;
+
+            background: var(--blue-soft);
+            color: #1d4ed8;
+
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+
+        /* =====================================================
+           DATABASE STATUS
+           ===================================================== */
+
+        .database-card {
+            background: var(--card);
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 15px;
+
+            box-shadow:
+                0 4px 18px
+                rgba(15, 23, 42, 0.05);
+
+            padding:
+                24px
+                28px;
+
+            margin-bottom: 26px;
+        }
+
+
+        .section-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 16px;
+
+            margin-bottom: 19px;
+        }
+
+
+        .section-title-row h3 {
+            margin: 0;
+
+            font-size: 1.15rem;
+        }
+
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+
+            padding:
+                6px
+                11px;
+
+            border-radius: 999px;
+
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+
+        .connected {
+            background: var(--green-soft);
+            color: var(--green);
+        }
+
+
+        .disconnected {
+            background: var(--red-soft);
+            color: var(--red);
+        }
+
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+
+            background: currentColor;
+        }
+
+
+        /* =====================================================
+           STATISTICS GRID
+           ===================================================== */
+
+        .stats-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    6,
+                    minmax(0, 1fr)
+                );
+
+            gap: 14px;
+        }
+
+
+        .stat-card {
+            padding:
+                18px
+                18px;
+
+            background: #f8fafc;
+
+            border:
+                1px
+                solid
+                #e7ecf2;
+
+            border-radius: 12px;
+
+            min-width: 0;
+        }
+
+
+        .stat-label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color: var(--muted);
+
+            font-size: 0.74rem;
+            font-weight: 700;
+
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+
+        .stat-number {
+            display: block;
+
+            color: var(--text);
+
+            font-size: 1.65rem;
+            line-height: 1.1;
+
+            font-weight: 750;
+        }
+
+
+        .stat-small {
+            font-size: 1rem;
+
+            overflow-wrap: anywhere;
+        }
+
+
+        /* =====================================================
+           TASK CARDS
+           ===================================================== */
+
+        .task-section-title {
+            margin:
+                35px
+                0
+                16px;
+
+            font-size: 1.45rem;
+
+            letter-spacing: -0.02em;
+        }
+
+
+        .task-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0, 1fr)
+                );
+
+            gap: 22px;
+        }
+
+
+        .task-panel {
+            position: relative;
+
+            display: flex;
+            flex-direction: column;
+
+            min-height: 330px;
+
+            padding:
+                28px;
+
+            background: var(--card);
+
+            border:
+                1px
+                solid
+                var(--border);
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 5px 22px
+                rgba(15, 23, 42, 0.055);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+        }
+
+
+        .task-panel:hover {
+            transform:
+                translateY(-2px);
+
+            border-color: #c6d3e2;
+
+            box-shadow:
+                0 10px 30px
+                rgba(15, 23, 42, 0.085);
+        }
+
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+
+            gap: 14px;
+
+            margin-bottom: 14px;
+        }
+
+
+        .task-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-width: 45px;
+            height: 27px;
+
+            padding:
+                0
+                10px;
+
+            border-radius: 999px;
+
+            background: var(--navy);
+
+            color: white;
+
+            font-size: 0.76rem;
+            font-weight: 750;
+        }
+
+
+        .working-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            padding:
+                5px
+                10px;
+
+            border-radius: 999px;
+
+            background: var(--green-soft);
+            color: var(--green);
+
+            font-size: 0.76rem;
+            font-weight: 700;
+        }
+
+
+        .task-panel h3 {
+            margin:
+                0
+                0
+                9px;
+
+            font-size: 1.35rem;
+
+            letter-spacing: -0.02em;
+        }
+
+
+        .task-description {
+            margin:
+                0
+                0
+                21px;
+
+            color: var(--muted);
+        }
+
+
+        /* =====================================================
+           TASK METRICS
+           ===================================================== */
+
+        .task-metrics {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    3,
+                    minmax(0, 1fr)
+                );
+
+            gap: 10px;
+
+            margin-bottom: 25px;
+        }
+
+
+        .task-metric {
+            padding:
+                12px
+                13px;
+
+            border-radius: 10px;
+
+            background: #f8fafc;
+
+            border:
+                1px
+                solid
+                #e8edf3;
+        }
+
+
+        .task-metric-label {
+            display: block;
+
+            margin-bottom: 4px;
+
+            color: var(--muted);
+
+            font-size: 0.7rem;
+            font-weight: 700;
+
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+
+        .task-metric-number {
+            font-size: 1.18rem;
+            font-weight: 750;
+
+            color: var(--text);
+        }
+
+
+        /* =====================================================
+           TASK BUTTON
+           ===================================================== */
+
+        .task-action {
+            margin-top: auto;
+        }
+
+
+        .open-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 43px;
+
+            padding:
+                0
+                17px;
+
+            border-radius: 9px;
+
+            background: var(--blue);
+
+            color: white;
+
+            text-decoration: none;
+
+            font-size: 0.9rem;
+            font-weight: 700;
+
+            transition:
+                background 0.2s ease,
+                transform 0.2s ease;
+        }
+
+
+        .open-button:hover {
+            background: var(--blue-hover);
+
+            transform:
+                translateY(-1px);
+        }
+
+
+        /* =====================================================
+           FOOT NOTE
+           ===================================================== */
+
+        .dashboard-note {
+            margin-top: 28px;
+
+            padding:
+                15px
+                18px;
+
+            border:
+                1px
+                solid
+                #dbe4ef;
+
+            border-radius: 11px;
+
+            background: #f8fafc;
+
+            color: var(--muted);
+
+            font-size: 0.86rem;
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+           ===================================================== */
+
+        @media (max-width: 1200px) {
+
+            .stats-grid {
+                grid-template-columns:
+                    repeat(
+                        3,
+                        minmax(0, 1fr)
+                    );
+            }
+        }
+
+
+        @media (max-width: 850px) {
+
+            .header-inner,
+            .dashboard-container {
+                width:
+                    min(
+                        100% - 28px,
+                        1440px
+                    );
+            }
+
+
+            .task-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .intro-top {
+                flex-direction: column;
+            }
+
+
+            .stats-grid {
+                grid-template-columns:
+                    repeat(
+                        2,
+                        minmax(0, 1fr)
+                    );
+            }
+
+
+            .task-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+
+
+        @media (max-width: 520px) {
+
+            .brand h1 {
+                font-size: 1.08rem;
+            }
+
+
+            .brand p {
+                display: none;
+            }
+
+
+            .module-badge {
+                font-size: 0.75rem;
+            }
+
+
+            .dashboard-container {
+                padding-top: 22px;
+            }
+
+
+            .intro-card,
+            .database-card,
+            .task-panel {
+                padding:
+                    21px
+                    18px;
+            }
+
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- =====================================================
+         STICKY HEADER
+         ===================================================== -->
+
+    <header class="site-header">
+
+        <div class="header-inner">
+
+            <div class="brand">
+
+                <h1>
+                    Information Retrieval Coursework
+                </h1>
+
+                <p>
+                    Django + Oracle Information Retrieval System
+                </p>
+
+            </div>
+
+
+            <span class="module-badge">
+                {{ module_code }}
+            </span>
+
+        </div>
+
     </header>
 
-    <main>
-      <section class="intro">
-        <h2>Coursework Dashboard</h2>
 
-        <p>
-          This system implements both assessed components of the Information
-          Retrieval coursework through a single Django web interface.
-        </p>
-      </section>
+    <main class="dashboard-container">
 
-      <section class="task-card" style="margin-bottom: 24px">
-        <h3>Oracle Database Status</h3>
+        <!-- =================================================
+             INTRODUCTION
+             ================================================= -->
 
-        {% if database_connected %}
+        <section class="intro-card">
 
-        <p>
-          <strong>Status:</strong>
-          Connected
-        </p>
+            <div class="intro-top">
 
-        <p>
-          <strong>Oracle User:</strong>
-          {{ database_user }}
-        </p>
+                <div>
 
-        <p>
-          <strong>Researchers Stored:</strong>
-          {{ researcher_count }}
-        </p>
+                    <h2>
+                        Coursework Dashboard
+                    </h2>
 
-        <p>
-          <strong>Publications Stored:</strong>
-          {{ publication_count }}
-        </p>
+                    <p>
+                        This Django application implements both assessed
+                        Information Retrieval components through one interface:
+                        a vertical search engine for Coventry PurePortal research
+                        outputs and a TF-IDF / K-Means document clustering system.
+                    </p>
 
-        {% else %}
+                </div>
 
-        <p>
-          <strong>Status:</strong>
-          Database connection unavailable
-        </p>
 
-        {% endif %}
-      </section>
+                <span class="coursework-pill">
+                    {{ module_code }}
+                </span>
 
-      <section class="task-grid">
-        <article class="task-card">
-          <h3>Task 1 — Vertical Search Engine</h3>
+            </div>
 
-          <p>
-            Crawl relevant Coventry University PurePortal publications,
-            construct an index and return ranked publication results based on
-            user queries.
-          </p>
+        </section>
 
-          <p>
-            <strong>Indexed documents:</strong>
-            {{ indexed_document_count }}
-          </p>
 
-          <p>
-            <strong>Vocabulary terms:</strong>
-            {{ vocabulary_count }}
-          </p>
+        <!-- =================================================
+             ORACLE DATABASE STATUS
+             ================================================= -->
 
-          <p>
-            <strong>Inverted-index postings:</strong>
-            {{ posting_count }}
-          </p>
+        <section class="database-card">
 
-          <p>
-            <a href="{% url 'search_engine:search' %}">
-              Open Vertical Search Engine →
-            </a>
-          </p>
+            <div class="section-title-row">
 
-          <span class="status"> Working </span>
-        </article>
+                <h3>
+                    Oracle Database & Index Status
+                </h3>
 
-        <article class="task-card">
-          <h3>Task 2 — Document Clustering</h3>
 
-          <p>
-            Process Economics, Entertainment and Politics documents using TF-IDF
-            and K-Means clustering, then assign new user-entered text to a
-            learned cluster.
-          </p>
+                {% if database_connected %}
 
-          <p>
-            <strong>Clustering documents:</strong>
-            {{ clustering_document_count }}
-          </p>
+                <span class="connection-status connected">
 
-          <p>
-            <a href="{% url 'clustering:clustering' %}">
-              Open Document Clustering →
-            </a>
-          </p>
+                    <span class="status-dot"></span>
 
-          <span class="status"> Working </span>
-        </article>
-      </section>
+                    Connected
+
+                </span>
+
+                {% else %}
+
+                <span class="connection-status disconnected">
+
+                    <span class="status-dot"></span>
+
+                    Connection unavailable
+
+                </span>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Oracle user
+                    </span>
+
+                    <span class="stat-number stat-small">
+                        {{ database_user }}
+                    </span>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Researchers
+                    </span>
+
+                    <span class="stat-number">
+                        {{ researcher_count }}
+                    </span>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Research outputs
+                    </span>
+
+                    <span class="stat-number">
+                        {{ publication_count }}
+                    </span>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Indexed documents
+                    </span>
+
+                    <span class="stat-number">
+                        {{ indexed_document_count }}
+                    </span>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Vocabulary terms
+                    </span>
+
+                    <span class="stat-number">
+                        {{ vocabulary_count }}
+                    </span>
+
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span class="stat-label">
+                        Index postings
+                    </span>
+
+                    <span class="stat-number">
+                        {{ posting_count }}
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             COURSEWORK COMPONENTS
+             ================================================= -->
+
+        <h2 class="task-section-title">
+            Coursework Components
+        </h2>
+
+
+        <section class="task-grid">
+
+            <!-- =============================================
+                 TASK 1
+                 ============================================= -->
+
+            <article class="task-panel">
+
+                <div class="task-header">
+
+                    <span class="task-number">
+                        Task 1
+                    </span>
+
+
+                    <span class="working-badge">
+
+                        <span class="status-dot"></span>
+
+                        Working
+
+                    </span>
+
+                </div>
+
+
+                <h3>
+                    Vertical Search Engine
+                </h3>
+
+
+                <p class="task-description">
+                    Searches the official research outputs listed by Coventry
+                    University's Centre for Healthcare and Community
+                    Transformation. Documents are processed with TF-IDF and
+                    ranked using cosine similarity through an inverted index.
+                </p>
+
+
+                <div class="task-metrics">
+
+                    <div class="task-metric">
+
+                        <span class="task-metric-label">
+                            Research outputs
+                        </span>
+
+                        <span class="task-metric-number">
+                            {{ publication_count }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="task-metric">
+
+                        <span class="task-metric-label">
+                            Vocabulary
+                        </span>
+
+                        <span class="task-metric-number">
+                            {{ vocabulary_count }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="task-metric">
+
+                        <span class="task-metric-label">
+                            Postings
+                        </span>
+
+                        <span class="task-metric-number">
+                            {{ posting_count }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="task-action">
+
+                    <a
+                        class="open-button"
+                        href="{% url 'search_engine:search' %}"
+                    >
+                        Open Vertical Search Engine →
+                    </a>
+
+                </div>
+
+            </article>
+
+
+            <!-- =============================================
+                 TASK 2
+                 ============================================= -->
+
+            <article class="task-panel">
+
+                <div class="task-header">
+
+                    <span class="task-number">
+                        Task 2
+                    </span>
+
+
+                    <span class="working-badge">
+
+                        <span class="status-dot"></span>
+
+                        Working
+
+                    </span>
+
+                </div>
+
+
+                <h3>
+                    Document Clustering
+                </h3>
+
+
+                <p class="task-description">
+                    Processes Economics, Entertainment and Politics documents
+                    using TF-IDF feature vectors and K-Means clustering. New
+                    user-entered text can then be assigned to the nearest
+                    learned document cluster.
+                </p>
+
+
+                <div class="task-metrics">
+
+                    <div class="task-metric">
+
+                        <span class="task-metric-label">
+                            Documents
+                        </span>
+
+                        <span class="task-metric-number">
+                            {{ clustering_document_count }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="task-metric">
+
+                        <span class="task-metric-label">
+                            Categories
+                        </span>
+
+                        <span class="task-metric-number">
+                            3
+                        </span>
+
+                    </div>
+
+
+                    <div class="task-metric">
+
+                        <span class="task-metric-label">
+                            Algorithm
+                        </span>
+
+                        <span class="task-metric-number">
+                            K-Means
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="task-action">
+
+                    <a
+                        class="open-button"
+                        href="{% url 'clustering:clustering' %}"
+                    >
+                        Open Document Clustering →
+                    </a>
+
+                </div>
+
+            </article>
+
+        </section>
+
+
+        <div class="dashboard-note">
+
+            All displayed collection and index counts are retrieved dynamically
+            from the Oracle database through Django. The interface does not use
+            hard-coded publication or index totals.
+
+        </div>
+
     </main>
-  </body>
+
+</body>
 </html>

@@ -84,6 +84,13 @@ class Publication(models.Model):
         db_column="PUBLICATION_YEAR",
     )
 
+    publication_date = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        db_column="PUBLICATION_DATE",
+    )
+
     publication_url = models.CharField(
         max_length=1000,
         unique=True,
@@ -94,6 +101,32 @@ class Publication(models.Model):
         null=True,
         blank=True,
         db_column="ABSTRACT",
+    )
+    publication_type = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        db_column="PUBLICATION_TYPE",
+    )
+
+    author_profiles_json = models.TextField(
+        null=True,
+        blank=True,
+        db_column="AUTHOR_PROFILES_JSON",
+    )
+
+    source_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        db_column="SOURCE_NAME",
+    )
+
+    source_url = models.CharField(
+        max_length=1000,
+        null=True,
+        blank=True,
+        db_column="SOURCE_URL",
     )
 
     crawled_at = models.DateTimeField(
@@ -110,6 +143,7 @@ class Publication(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class PublicationResearcher(models.Model):
     """
@@ -149,6 +183,7 @@ class PublicationResearcher(models.Model):
 
     def __str__(self):
         return f"{self.researcher} -> {self.publication}"
+
 
 class TermIndex(models.Model):
     """
@@ -214,6 +249,7 @@ class DocumentVector(models.Model):
 
     def __str__(self):
         return self.title or self.url
+
 
 class InvertedIndex(models.Model):
     """
